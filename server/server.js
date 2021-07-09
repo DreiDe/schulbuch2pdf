@@ -64,8 +64,7 @@ io.on('connection', socket => {
                 socket.emit('status', 'Buchseiten werden heruntergeladen...');
                 downloadImages(pageUrls, downloadFolder)
                     .then(() => {
-                        socket.emit('status', 'PDF wird erzeugt...');
-                        pdfFromImages(downloadFolder);
+                        pdfFromImages(downloadFolder, socket);
                         socket.emit('download', downloadFolder.replace(TEMP_FOLDER, DOWNLOAD_PATH));
                     });
             })
@@ -112,16 +111,20 @@ const downloadImage = async (url, location) => {
     })
 };
 
-const pdfFromImages = (folder) => {
+const pdfFromImages = (folder, socket) => {
     var pdf = new (PDFDocument)({
         autoFirstPage: false
     });
+    let currentPage = 0;
     var collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
     let pages = fs.readdirSync(folder).sort(collator.compare);
 
     pdf.pipe(fs.createWriteStream(`${folder}/${PDF_NAME}`));
     pages.forEach(file => {
-        console.log("page added to pdf");
+        currentPage++;
+        if (currentPage % 5 == 0) {
+            socket.emit('status', `PDF wird erzeugt: Seite ${currentPage}`);
+        }
         var img = pdf.openImage(`${folder}${file}`);
         pdf.addPage({ size: [img.width, img.height] });
         pdf.image(img, 0, 0);
