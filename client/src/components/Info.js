@@ -11,7 +11,7 @@ const Info = () => {
                     1. In der BiBox unter <a href="https://bibox2.westermann.de" className="underline">bibox2.westermann.de</a> ganz normal anmelden.
                 </li>
                 <li>
-                    2. Mit <b>F12</b> die Entwicklertools öffnen und dort auf den Tab "Konsole" klicken.
+                    2. Mit <b>F12</b> die Entwicklertools öffnen und dort auf den Tab "Konsole" klicken (Chrome/Firefox am PC).
                 </li>
                 <li>
                     3. Folgenen Code Einfügen <b>localStorage.getItem("oauth.accessToken")</b> und mit Enter ausführen.

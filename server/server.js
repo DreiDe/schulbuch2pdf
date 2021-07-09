@@ -41,6 +41,7 @@ io.on('connection', socket => {
                 cb(books);
             })
             .catch(function (error) {
+                console.log(error);
                 socket.emit('error', 'Der eingegebene Token ist ungültig.');
             });
     });
@@ -69,6 +70,7 @@ io.on('connection', socket => {
                     });
             })
             .catch(function (error) {
+                console.log(error);
                 socket.emit('error', 'Es ist ein Fehler augetreten.');
             });
     });
