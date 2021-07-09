@@ -19,9 +19,7 @@ function App() {
   }
 
   const downloadBook = (id) => {
-    socket.emit('downloadBook', token, id, (res) => {
-      setBooks(res);
-    });
+    socket.emit('downloadBook', token, id);
   }
 
   useEffect(() => {

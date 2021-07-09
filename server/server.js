@@ -46,7 +46,7 @@ io.on('connection', socket => {
             });
     });
 
-    socket.on('downloadBook', (token, id, cb) => {
+    socket.on('downloadBook', (token, id) => {
         socket.emit('status', 'Buchseiten werden eingelesen.');
         axios({
             method: 'get',
@@ -64,8 +64,9 @@ io.on('connection', socket => {
                 socket.emit('status', 'Buchseiten werden heruntergeladen...');
                 downloadImages(pageUrls, downloadFolder)
                     .then(() => {
-                        pdfFromImages(downloadFolder, socket);
-                        socket.emit('download', downloadFolder.replace(TEMP_FOLDER, DOWNLOAD_PATH));
+                        pdfFromImages(downloadFolder, socket).then(() => {
+                            socket.emit('download', downloadFolder.replace(TEMP_FOLDER, DOWNLOAD_PATH));
+                        });
                     });
             })
             .catch(function (error) {
@@ -111,7 +112,7 @@ const downloadImage = async (url, location) => {
     })
 };
 
-const pdfFromImages = (folder, socket) => {
+const pdfFromImages = async (folder, socket) => {
     var pdf = new (PDFDocument)({
         autoFirstPage: false
     });
@@ -120,17 +121,23 @@ const pdfFromImages = (folder, socket) => {
     let pages = fs.readdirSync(folder).sort(collator.compare);
 
     pdf.pipe(fs.createWriteStream(`${folder}/${PDF_NAME}`));
-    pages.forEach(file => {
-        let used = process.memoryUsage().heapUsed / 1024 / 1024;
-        console.log(`The script uses approximately ${Math.round(used * 100) / 100} MB`);
+    for (const file of pages) {
         currentPage++;
         if (currentPage % 5 == 0) {
             socket.emit('status', `PDF wird erzeugt: Seite ${currentPage}`);
+            await setImmediatePromise();
         }
         var img = pdf.openImage(`${folder}${file}`);
         pdf.addPage({ size: [img.width, img.height] });
         pdf.image(img, 0, 0);
-    });
+    }
 
     pdf.end();
+}
+
+// Unblock event loop https://snyk.io/blog/nodejs-how-even-quick-async-functions-can-block-the-event-loop-starve-io/
+const setImmediatePromise = () => {
+    return new Promise((resolve) => {
+        setImmediate(() => resolve());
+    });
 }
