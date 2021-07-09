@@ -121,6 +121,7 @@ const pdfFromImages = (folder) => {
 
     pdf.pipe(fs.createWriteStream(`${folder}/${PDF_NAME}`));
     pages.forEach(file => {
+        console.log("page added to pdf");
         var img = pdf.openImage(`${folder}${file}`);
         pdf.addPage({ size: [img.width, img.height] });
         pdf.image(img, 0, 0);

@@ -15,7 +15,7 @@ const Books = ({books, onClick}) => {
                             }
                         </div>
                         :
-                        <p className="mx-auto text-2xl">Bevor hier Bücher angezeigt werden, müssen Sie zuerst den Token in das Textfeld eingeben.</p>
+                        <p className="mx-auto text-2xl text-center">Bevor hier Bücher angezeigt werden, müssen Sie zuerst den Token in das Textfeld eingeben.</p>
                 }
             </div>
         </>
