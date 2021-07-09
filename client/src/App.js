@@ -42,7 +42,7 @@ function App() {
       setToast({message: `Fertig. Download unter: ${path}`, type: "info"});
       window.open(path,'_blank');
     });
-  });
+  }, []);
 
   return (
     <div className="bg-gray-200">
