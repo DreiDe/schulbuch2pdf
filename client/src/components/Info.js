@@ -20,7 +20,10 @@ const Info = () => {
                     4. Den angezeigten Text kopieren (ohne Anführungzeichen) und in das Textfeld auf dieser Seite einfügen.
                 </li>
                 <li>
-                    5. Nun sollten die gekauften Werke unten aufgelistet werden und durch Klick auf "Download" heruntergeladen werden können.
+                    5. Den Button "Bücher abrufen" anklicken.
+                </li>
+                <li>
+                    6. Nun sollten die gekauften Werke unten aufgelistet werden und durch Klick auf "Download" heruntergeladen werden können.
                 </li>
             </ol>
         </div>
