@@ -121,6 +121,8 @@ const pdfFromImages = (folder, socket) => {
 
     pdf.pipe(fs.createWriteStream(`${folder}/${PDF_NAME}`));
     pages.forEach(file => {
+        let used = process.memoryUsage().heapUsed / 1024 / 1024;
+        console.log(`The script uses approximately ${Math.round(used * 100) / 100} MB`);
         currentPage++;
         if (currentPage % 5 == 0) {
             socket.emit('status', `PDF wird erzeugt: Seite ${currentPage}`);
