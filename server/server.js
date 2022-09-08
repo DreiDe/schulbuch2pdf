@@ -25,10 +25,6 @@ app.get(`${DOWNLOAD_PATH}/:uuid`, (req, res) => {
     res.download(file);
 });
 
-app.get('/', (req, res) => {
-    res.sendFile('index.html', {root: path.join(__dirname, 'public')});
-})
-
 io.on('connection', socket => {
     console.log("connected");
     socket.on('loadBooks', (token, cb) => {
