@@ -4,7 +4,6 @@ const PDFDocument = require('pdfkit');
 const { v4: uuidv4 } = require('uuid');
 const express = require("express");
 const socket = require('socket.io');
-const path = require('path');
 
 const PORT = process.env.PORT || 5000;
 const TEMP_FOLDER = './tmp';
