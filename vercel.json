@@ -6,9 +6,9 @@
     { "src": "server/public/**", "use": "@vercel/static" }
   ],
   "routes": [
-    { "src": "/", "dest": "server/public/index.html" },
-    { "src": "/(.+)", "dest": "server/public/$1" },
     { "src": "socket.io/(.*)", "dest": "server/server.js" },
     { "src": "download/(.*)", "dest": "server/server.js" },
+    { "src": "/", "dest": "server/public/index.html" },
+    { "src": "/(.+)", "dest": "server/public/$1" }
   ]
 }
