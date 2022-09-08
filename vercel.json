@@ -2,9 +2,12 @@
   "version": 2,
   "name": "nodejs-mysql",
   "builds": [
-    { "src": "server/server.js", "use": "@vercel/node" }
+    { "src": "server/server.js", "use": "@vercel/node" },
+    { "src": "server/public/**", "use": "@vercel/static" }
   ],
   "routes": [
+    { "src": "/", "dest": "server/public/index.html" },
+    { "src": "/(.+)", "dest": "public/$1" },
     { "src": "/(.*)", "dest": "server/server.js" }
   ]
 }
