@@ -4,6 +4,7 @@ const PDFDocument = require('pdfkit');
 const { v4: uuidv4 } = require('uuid');
 const express = require("express");
 const socket = require('socket.io');
+const path = require('path');
 
 const PORT = process.env.PORT || 5000;
 const TEMP_FOLDER = './tmp';
@@ -23,6 +24,10 @@ app.get(`${DOWNLOAD_PATH}/:uuid`, (req, res) => {
     const file = `${TEMP_FOLDER}/${req.params.uuid}/${PDF_NAME}`;
     res.download(file);
 });
+
+app.get('/', (req, res) => {
+    res.sendFile('index.html', {root: path.join(__dirname, 'public')});
+})
 
 io.on('connection', socket => {
     console.log("connected");
