@@ -5,7 +5,7 @@ const { v4: uuidv4 } = require('uuid');
 const express = require("express");
 const socket = require('socket.io');
 
-const PORT = process.env.PORT || 5000;
+const PORT = 80;
 const TEMP_FOLDER = './tmp';
 const PDF_NAME = 'Buch.pdf';
 const BIBOX_URL = 'https://backend.bibox2.westermann.de/api';
