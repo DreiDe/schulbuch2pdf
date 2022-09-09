@@ -17,6 +17,6 @@ RUN npm install
 # layers should be cached till here, no npm install on rebuild
 
 COPY server .
-COPY --from=builder /usr/src/app/public public
+COPY --from=builder /usr/src/app/build public
 EXPOSE 80
 CMD [ "node", "server.js" ]
