@@ -1,6 +1,6 @@
-import Book from './Book.js';
+import Downloader from './Downloader.js';
 
-class Buchner extends Book {
+class Buchner extends Downloader {
     constructor(onMessage, token) {
         super(onMessage, 'https://www.click-and-study.de', {
             'cookie': `ccb_token_secure=${token}`
@@ -25,6 +25,16 @@ class Buchner extends Book {
         catch {
             this.error('Die API Antwort von C.C. Buchner wurde geändert');
         }
+    }
+
+    async downloadAllPages(bookId) {
+        this.status("Page download started");
+        const tempFolder = Downloader.createTempFolder();
+        const promises = [];
+        for (let i = 1; i < 366; i++) {
+            promises.push(this.downloadImage(`https://www.click-and-study.de/Media/page/${bookId}/${i}`, `${tempFolder}${i}.png`, 2.5));
+        }
+        return Promise.all(promises);
     }
 }
 

@@ -1,6 +1,6 @@
-import Book from './Book.js';
+import Downloader from './Downloader.js';
 
-class Westermann extends Book {
+class Westermann extends Downloader {
     constructor(onMessage, token) {
         super(onMessage, 'https://backend.bibox2.westermann.de/api', {
             'authorization': `Bearer ${token}`
@@ -19,8 +19,39 @@ class Westermann extends Book {
             });
             return books;
         } catch {
-            this.error('Die API Antwort von Westermann wurde geändert');
+            this.error('Der Westermann Bücher Endpunkt wurde geändert.');
         }
+    }
+
+    async #getPageUrls(bookId) {
+        const resp = await this.api.get(`/sync/${bookId}`);
+        if (!resp) return;
+
+        try {
+            const pageUrls = resp.data.pages.map(page => {
+                return page.images[1].url;
+            });
+            if (pageUrls.length === 0) {
+                this.error('Keine Seiten konnten gelesen werden.');
+                return;
+            }
+            return pageUrls;
+        } catch {
+            this.error('Der Westermann Seiten Endpunkt wurde geändert.');
+        }
+    }
+
+    async downloadAllPages(bookId) {
+        this.status("Page download started");
+        const urls = await this.#getPageUrls(bookId);
+        if (!urls) return;
+
+        const tempFolder = Downloader.createTempFolder();
+        const promises = [];
+        for (let i = 0; i < urls.length; i++) {
+            promises.push(this.downloadImage(urls[i], `${tempFolder}${i}.png`));
+        }
+        return Promise.all(promises);
     }
 }
 

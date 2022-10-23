@@ -1,9 +1,9 @@
-import Book from './Book.js';
+import Downloader from './Downloader.js';
 
-class Klett extends Book {
-    constructor(onMessage, token) {
+class Klett extends Downloader {
+    constructor(onMessage, klett_session, session) {
         super(onMessage, 'https://www.klett.de', {
-            'cookie': `klett_session=${token}`
+            'cookie': `klett_session=${klett_session};SESSION=${session}`
         });
 
         return this;
@@ -59,6 +59,16 @@ class Klett extends Book {
         } catch {
             this.error('Der Klett Endpunkt für Buchdetails wurde geändert.');
         }
+    }
+
+    async downloadAllPages(bookId) {
+        this.status("Page download started");
+        const tempFolder = Downloader.createTempFolder();
+        const promises = [];
+        for (let i = 0; i < 533; i++) {
+            promises.push(this.downloadImage(`https://bridge.klett.de/${bookId}/content/pages/page_${i}/Scale4.png`, `${tempFolder}${i}.png`));
+        }
+        return Promise.all(promises);
     }
 };
 

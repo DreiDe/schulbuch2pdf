@@ -2,13 +2,13 @@ const Westermann = () => {
     return (
         <div>
             <p className="text-2xl">
-                Auf dieser Seite können Sie Schulbücher aus der BiBox des Westermann Verlags als PDF herunterladen. Dies funktioniert allerdings nur wenn sie zuvor eine Lizenz für das eBook beim Verlag selber erworben haben, sodass dieses bei <a href="https://bibox2.westermann.de/shelf" className="underline">bibox2.westermann.de/shelf</a> gelistet wird.
+                Auf dieser Seite können Sie Schulbücher aus der BiBox des Westermann Verlags als PDF herunterladen. Dies funktioniert allerdings nur wenn sie zuvor eine Lizenz für das eBook beim Verlag selber erworben haben, sodass dieses bei <a href="https://bibox2.westermann.de/shelf" target="_blank" className="underline">bibox2.westermann.de/shelf</a> gelistet wird.
             </p>
             <br></br>
             <h3>Anleitung:</h3>
             <ol>
                 <li>
-                    1. In der BiBox unter <a href="https://bibox2.westermann.de" className="underline">bibox2.westermann.de</a> ganz normal anmelden.
+                    1. In der BiBox unter <a href="https://bibox2.westermann.de" target="_blank" className="underline">bibox2.westermann.de</a> ganz normal anmelden.
                 </li>
                 <li>
                     2. Mit <b>F12</b> die Entwicklertools öffnen und dort auf den Tab "App" klicken (Chrome/Firefox am PC).

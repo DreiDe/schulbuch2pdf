@@ -20,7 +20,13 @@ const io = new Server(server, {
 
 const isLoadRequestValid = (token, cb, onMessage) => {
     if (token && cb && typeof cb === 'function') return true;
-    onMessage("error", "Socket Event enthält falsche Parameter.")
+    onMessage("error", "Socket Load Event enthält falsche Parameter.")
+    return false;
+}
+
+const isDownloadRequestValid = (token, bookId, onMessage) => {
+    if (token && bookId) return true;
+    onMessage("error", "Socket Download Event enthält falsche Parameter.")
     return false;
 }
 
@@ -34,7 +40,12 @@ io.on('connection', socket => {
 
     socket.on('klett/load', async (token, cb) => {
         if (!isLoadRequestValid(token, cb, onMessage)) return;
-        cb((await new Klett(onMessage, token).getBooks()));
+        const sessions = token.split(" ");
+        if(sessions.length !== 2){
+            onMessage("error", "klett_session und SESSION wurden nicht mit einem Leerzeichen getrennt");
+            return;
+        }
+        cb((await new Klett(onMessage, sessions[0], sessions[1]).getBooks()));
     });
 
     socket.on('buchner/load', async (token, cb) => {
@@ -47,9 +58,33 @@ io.on('connection', socket => {
         cb((await new Cornelsen(onMessage, token).getBooks()));
     });
 
-    /*
-    socket.on('cornelsen/load', (token, cb) => { });
-    socket.on('klett/load', (token, cb) => { });
-    socket.on('buchner/load', (token, cb) => { });
-    */
+    socket.on('westermann/download', async (token, bookId) => {
+        if (!isDownloadRequestValid(token, bookId, onMessage)) return;
+        const downloader = new Westermann(onMessage, token).downloadAllPages(bookId);
+    });
+
+    socket.on('buchner/download', async (token, bookId) => {
+        if (!isDownloadRequestValid(token, bookId, onMessage)) return;
+        const downloader = new Buchner(onMessage, token).downloadAllPages(bookId);
+    });
+
+    socket.on('klett/download', async (token, bookId) => {
+        if (!isDownloadRequestValid(token, bookId, onMessage)) return;
+        const sessions = token.split(" ");
+        if(sessions.length !== 2){
+            onMessage("error", "klett_session und SESSION wurden nicht mit einem Leerzeichen getrennt");
+            return;
+        }
+        const downloader = new Klett(onMessage, sessions[0], sessions[1]).downloadAllPages(bookId);
+    });
+
+    socket.on('cornelsen/download', async (token, bookId) => {
+        if (!isDownloadRequestValid(token, bookId, onMessage)) return;
+        const bookIds = bookId.split(" ");
+        if(bookIds.length !== 2){
+            onMessage("error", "usageId und salesId nicht mit Leerzeichen getrennt.");
+            return;
+        }
+        const downloader = new Cornelsen(onMessage, token).downloadAllPages(bookIds[0], bookIds[1]);
+    });
 });
