@@ -31,7 +31,7 @@ class Buchner extends Downloader {
         // TODO: make this a reusable function peace
         const tempFolder = Downloader.createTempFolder();
         let status = 'fulfilled';
-        let counter = 0;
+        let counter = 1;
 
         while (status === 'fulfilled') {
             this.status(`Seiten werden eingelesen. Bisher ${counter} Seiten`);
