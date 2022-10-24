@@ -1,143 +1,99 @@
-const axios = require('axios');
-var fs = require('fs');
-const PDFDocument = require('pdfkit');
-const { v4: uuidv4 } = require('uuid');
-const express = require("express");
-const socket = require('socket.io');
+import express from 'express';
+import { Server } from "socket.io";
+import Westermann from './Westermann.js';
+import Klett from './Klett.js';
+import Buchner from './Buchner.js';
+import Cornelsen from './Cornelsen.js';
+import Downloader from './Downloader.js';
 
-const PORT = 80;
+const PORT = 5000;
 const TEMP_FOLDER = './tmp';
-const PDF_NAME = 'Buch.pdf';
-const BIBOX_URL = 'https://backend.bibox2.westermann.de/api';
 const DOWNLOAD_PATH = '/download';
 
 const app = express();
-const server = app.listen(PORT, () => {
-    console.log(`Server listening on Port ${PORT}`)
+const server = app.listen(PORT, () => console.log(`Server listening on Port ${PORT}`));
+const io = new Server(server, {
+    cors: {
+        origin: "*"
+    }
 });
-const io = socket(server);
 
-app.use(express.static("public"));
+const isLoadRequestValid = (token, cb, onMessage) => {
+    if (token && cb && typeof cb === 'function') return true;
+    onMessage("error", "Socket Load Event enthält falsche Parameter.")
+    return false;
+}
+
+const isDownloadRequestValid = (token, bookId, onMessage) => {
+    if (token && bookId) return true;
+    onMessage("error", "Socket Download Event enthält falsche Parameter.")
+    return false;
+}
 
 app.get(`${DOWNLOAD_PATH}/:uuid`, (req, res) => {
-    const file = `${TEMP_FOLDER}/${req.params.uuid}/${PDF_NAME}`;
+    const file = `${TEMP_FOLDER}/${req.params.uuid}/Buch.pdf`;
     res.download(file);
 });
 
 io.on('connection', socket => {
-    console.log("connected");
-    socket.on('loadBooks', (token, cb) => {
-        axios({
-            method: 'get',
-            url: `${BIBOX_URL}/books`,
-            headers: {
-                'authorization': `Bearer ${token}`
-            }
-        })
-            .then(function (response) {
-                const books = response.data.map(book => {
-                    return { name: book.title, id: book.id, isbn: book.isbn, url: book.coverUrl };
-                });
-                cb(books);
-            })
-            .catch(function (error) {
-                console.log(error);
-                socket.emit('error', 'Der eingegebene Token ist ungültig.');
-            });
+    const onMessage = (type, message) => socket.emit(type, message);
+    const download = async (tempFolder) => {
+        await Downloader.pdfFromTempFolder(tempFolder, onMessage);
+        socket.emit('download', tempFolder.replace(TEMP_FOLDER, DOWNLOAD_PATH));
+    }
+
+    socket.on('westermann/load', async (token, cb) => {
+        if (!isLoadRequestValid(token, cb, onMessage)) return;
+        cb((await new Westermann(onMessage, token).getBooks()));
     });
 
-    socket.on('downloadBook', (token, id) => {
-        socket.emit('status', 'Buchseiten werden eingelesen.');
-        axios({
-            method: 'get',
-            url: `${BIBOX_URL}/sync/${id}`,
-            headers: {
-                'authorization': `Bearer ${token}`
-            }
-        })
-            .then(function (response) {
-                const pageUrls = response.data.pages.map(page => {
-                    return page.images[1].url;
-                });
+    socket.on('klett/load', async (token, cb) => {
+        if (!isLoadRequestValid(token, cb, onMessage)) return;
+        const sessions = token.split(" ");
+        if (sessions.length !== 2) {
+            onMessage("error", "klett_session und SESSION wurden nicht mit einem Leerzeichen getrennt");
+            return;
+        }
+        cb((await new Klett(onMessage, sessions[0], sessions[1]).getBooks()));
+    });
 
-                const downloadFolder = createTempFolder();
-                socket.emit('status', 'Buchseiten werden heruntergeladen...');
-                downloadImages(pageUrls, downloadFolder)
-                    .then(() => {
-                        pdfFromImages(downloadFolder, socket).then(() => {
-                            socket.emit('download', downloadFolder.replace(TEMP_FOLDER, DOWNLOAD_PATH));
-                        });
-                    });
-            })
-            .catch(function (error) {
-                console.log(error);
-                socket.emit('error', 'Es ist ein Fehler augetreten.');
-            });
+    socket.on('buchner/load', async (token, cb) => {
+        if (!isLoadRequestValid(token, cb, onMessage)) return;
+        cb((await new Buchner(onMessage, token).getBooks()));
+    });
+
+    socket.on('cornelsen/load', async (token, cb) => {
+        if (!isLoadRequestValid(token, cb, onMessage)) return;
+        cb((await new Cornelsen(onMessage, token).getBooks()));
+    });
+
+    socket.on('westermann/download', async (token, bookId) => {
+        if (!isDownloadRequestValid(token, bookId, onMessage)) return;
+        download(await new Westermann(onMessage, token).downloadAllPages(bookId));
+    });
+
+    socket.on('buchner/download', async (token, bookId) => {
+        if (!isDownloadRequestValid(token, bookId, onMessage)) return;
+        download(await new Buchner(onMessage, token).downloadAllPages(bookId))
+    });
+
+    socket.on('klett/download', async (token, bookId) => {
+        if (!isDownloadRequestValid(token, bookId, onMessage)) return;
+        const sessions = token.split(" ");
+        if (sessions.length !== 2) {
+            onMessage("error", "klett_session und SESSION wurden nicht mit einem Leerzeichen getrennt");
+            return;
+        }
+        download(await new Klett(onMessage, sessions[0], sessions[1]).downloadAllPages(bookId))
+    });
+
+    socket.on('cornelsen/download', async (token, bookId) => {
+        if (!isDownloadRequestValid(token, bookId, onMessage)) return;
+        const bookIds = bookId.split(" ");
+        if (bookIds.length !== 2) {
+            onMessage("error", "usageId und salesId nicht mit Leerzeichen getrennt.");
+            return;
+        }
+        download(await new Cornelsen(onMessage, token).downloadAllPages(bookIds[0], bookIds[1]))
     });
 });
-
-const downloadImages = (urls, folder) => {
-    const promises = [];
-    for (let i = 0; i < urls.length; i++) {
-        promises.push(downloadImage(urls[i], `${folder}${i}.png`));
-    }
-    return Promise.all(promises);
-}
-
-const createTempFolder = () => {
-    const name = `${TEMP_FOLDER}/${uuidv4()}/`;
-    fs.mkdirSync(name);
-    return name;
-}
-
-const deleteTempFolder = (name) => {
-    fs.rmdirSync(name, { recursive: true });
-    return true;
-}
-
-const downloadImage = async (url, location) => {
-    const writer = fs.createWriteStream(location)
-
-    const response = await axios({
-        url,
-        method: 'GET',
-        responseType: 'stream'
-    })
-
-    response.data.pipe(writer)
-
-    return new Promise((resolve, reject) => {
-        writer.on('finish', resolve)
-        writer.on('error', reject)
-    })
-};
-
-const pdfFromImages = async (folder, socket) => {
-    var pdf = new (PDFDocument)({
-        autoFirstPage: false
-    });
-    let currentPage = 0;
-    var collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
-    let pages = fs.readdirSync(folder).sort(collator.compare);
-
-    pdf.pipe(fs.createWriteStream(`${folder}/${PDF_NAME}`));
-    for (const file of pages) {
-        currentPage++;
-        if (currentPage % 5 == 0) {
-            socket.emit('status', `PDF wird erzeugt: Seite ${currentPage}`);
-            await setImmediatePromise();
-        }
-        var img = pdf.openImage(`${folder}${file}`);
-        pdf.addPage({ size: [img.width, img.height] });
-        pdf.image(img, 0, 0);
-    }
-
-    pdf.end();
-}
-
-// Unblock event loop https://snyk.io/blog/nodejs-how-even-quick-async-functions-can-block-the-event-loop-starve-io/
-const setImmediatePromise = () => {
-    return new Promise((resolve) => {
-        setImmediate(() => resolve());
-    });
-}

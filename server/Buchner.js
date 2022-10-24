@@ -28,13 +28,23 @@ class Buchner extends Downloader {
     }
 
     async downloadAllPages(bookId) {
-        this.status("Page download started");
+        // TODO: make this a reusable function peace
         const tempFolder = Downloader.createTempFolder();
-        const promises = [];
-        for (let i = 1; i < 366; i++) {
-            promises.push(this.downloadImage(`https://www.click-and-study.de/Media/page/${bookId}/${i}`, `${tempFolder}${i}.png`, 2.5));
+        let status = 'fulfilled';
+        let counter = 0;
+
+        while (status === 'fulfilled') {
+            this.status(`Seiten werden eingelesen. Bisher ${counter} Seiten`);
+            const promises = [];
+            for (let i = counter; i < counter + 10; i++) {
+                promises.push(this.downloadImage(`https://www.click-and-study.de/Media/page/${bookId}/${i}`, `${tempFolder}${i}.png`, 2.5));
+            }
+            const [result] = await Promise.allSettled(promises);
+            status = result.status;
+            counter += 10;
         }
-        return Promise.all(promises);
+
+        return tempFolder;
     }
 }
 

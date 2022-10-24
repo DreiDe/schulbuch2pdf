@@ -54,19 +54,28 @@ class Cornelsen extends Downloader {
         const pdfCreds = await this.#pdfKitAuth(jwt, salesId);
         if (!pdfCreds) return;
 
+        // TODO: make this a reusable function peace
         const tempFolder = Downloader.createTempFolder();
-        this.status("Page download started");
-        const promises = [];
-        for (let i = 0; i < 5; i++) {
-            promises.push(this.downloadImage(
-                `https://uma20-pspdfkit.prod.aws.cornelsen.de/i/d/${salesId}/h/${pdfCreds.layerHandle}/page-${i}-dimensions-2155-2949-tile-0-0-2155-2949`,
-                `${tempFolder}${i}.png`,
-                undefined,
-                { 'x-pspdfkit-image-token': pdfCreds.imageToken }
-            )
-            );
+        let status = 'fulfilled';
+        let counter = 0;
+
+        while (status === 'fulfilled') {
+            this.status(`Seiten werden eingelesen. Bisher ${counter} Seiten`);
+            const promises = [];
+            for (let i = counter; i < counter + 10; i++) {
+                promises.push(this.downloadImage(
+                    `https://uma20-pspdfkit.prod.aws.cornelsen.de/i/d/${salesId}/h/${pdfCreds.layerHandle}/page-${i}-dimensions-2155-2949-tile-0-0-2155-2949`,
+                    `${tempFolder}${i}.png`,
+                    undefined,
+                    { 'x-pspdfkit-image-token': pdfCreds.imageToken }
+                ));
+            }
+            const [result] = await Promise.allSettled(promises);
+            status = result.status;
+            counter += 10;
         }
-        return Promise.all(promises);
+
+        return tempFolder;
     }
 }
 

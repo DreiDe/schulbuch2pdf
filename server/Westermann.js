@@ -42,7 +42,8 @@ class Westermann extends Downloader {
     }
 
     async downloadAllPages(bookId) {
-        this.status("Page download started");
+        // TODO: return status of resolved Promises in Promise.all
+        this.status("Seiten werden eingelesen. Bitte warten...");
         const urls = await this.#getPageUrls(bookId);
         if (!urls) return;
 
@@ -51,7 +52,7 @@ class Westermann extends Downloader {
         for (let i = 0; i < urls.length; i++) {
             promises.push(this.downloadImage(urls[i], `${tempFolder}${i}.png`));
         }
-        return Promise.all(promises);
+        return Promise.all(promises).then(() => tempFolder);
     }
 }
 

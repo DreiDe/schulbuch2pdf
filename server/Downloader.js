@@ -30,19 +30,15 @@ class Downloader {
 
     async downloadImage(url, location, requestsPerSecond, headers = {}) {
         if (requestsPerSecond) axiosThrottle.use(axios, { requestsPerSecond });
-        try {
-            const resp = await axios.get(url, { responseType: 'stream', headers: { ...this.api.defaults.headers, ...headers } });
+        const resp = await axios.get(url, { responseType: 'stream', headers: { ...this.api.defaults.headers, ...headers } });
 
-            const writer = fs.createWriteStream(location)
-            resp.data.pipe(writer)
+        const writer = fs.createWriteStream(location)
+        resp.data.pipe(writer)
 
-            return new Promise((resolve, reject) => {
-                writer.on('finish', resolve)
-                writer.on('error', reject)
-            })
-        } catch (error) {
-            this.error("Bild download fehlgeschlagen.")
-        }
+        return new Promise((resolve, reject) => {
+            writer.on('finish', resolve)
+            writer.on('error', reject)
+        })
     };
 
     static createTempFolder = () => {
@@ -51,7 +47,7 @@ class Downloader {
         return folderPath;
     }
 
-    static async pdfFromTempFolder(folderPath, statusCb) {
+    static async pdfFromTempFolder(folderPath, onMessage) {
         var pdf = new (PDFDocument)({
             autoFirstPage: false
         });
@@ -63,7 +59,7 @@ class Downloader {
         for (const file of pages) {
             currentPage++;
             if (currentPage % 5 == 0) {
-                statusCb(`PDF wird erzeugt: Seite ${currentPage}`);
+                onMessage('status', `PDF wird erzeugt: Seite ${currentPage}`);
                 await this.setImmediatePromise();
             }
             var img = pdf.openImage(`${folderPath}/${file}`);
@@ -78,6 +74,11 @@ class Downloader {
         return new Promise((resolve) => {
             setImmediate(() => resolve());
         });
+    }
+
+    static deleteTempFolder = (name) => {
+        fs.rmdirSync(name, { recursive: true });
+        return true;
     }
 
 }

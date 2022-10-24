@@ -62,13 +62,23 @@ class Klett extends Downloader {
     }
 
     async downloadAllPages(bookId) {
-        this.status("Page download started");
+        // TODO: make this a reusable function peace
         const tempFolder = Downloader.createTempFolder();
-        const promises = [];
-        for (let i = 0; i < 533; i++) {
-            promises.push(this.downloadImage(`https://bridge.klett.de/${bookId}/content/pages/page_${i}/Scale4.png`, `${tempFolder}${i}.png`));
+        let status = 'fulfilled';
+        let counter = 0;
+
+        while (status === 'fulfilled') {
+            this.status(`Seiten werden eingelesen. Bisher ${counter} Seiten`);
+            const promises = [];
+            for (let i = counter; i < counter + 10; i++) {
+                promises.push(this.downloadImage(`https://bridge.klett.de/${bookId}/content/pages/page_${i}/Scale4.png`, `${tempFolder}${i}.png`));
+            }
+            const [result] = await Promise.allSettled(promises);
+            status = result.status;
+            counter += 10;
         }
-        return Promise.all(promises);
+
+        return tempFolder;
     }
 };
 
