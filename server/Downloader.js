@@ -77,7 +77,7 @@ class Downloader {
     }
 
     static deleteTempFolder = (name) => {
-        fs.rmdirSync(name, { recursive: true });
+        fs.rm(name, { recursive: true });
         return true;
     }
 

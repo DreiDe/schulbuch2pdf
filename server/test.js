@@ -18,6 +18,7 @@ const jwt = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJsYXllciI6IkAhMzhDNC42NTlGLj
 //console.log(await (new Westermann(onMessage, westermann).downloadAllPages(559)));
 //await (new Cornelsen(onMessage, cornelsen).downloadAllPages("220053802", "9783060315383"));
 //console.log(await (new Buchner(onMessage, buchner).downloadAllPages(230)));
-console.log(await (new Klett(onMessage, klett1, klett2).downloadAllPages("EBK-AQ68Q3BXMT")));
+//console.log(await (new Klett(onMessage, klett1, klett2).downloadAllPages("EBK-AQ68Q3BXMT")));
 //await Downloader.pdfFromTempFolder('./tmp/ea7d4be6-8b28-4f7e-be10-e3a6a79ac76a', console.log);
+Downloader.pdfFromTempFolder('./tmp/ff878c96-2d91-41b6-8767-21ddc4f1d330/', () => {});
 

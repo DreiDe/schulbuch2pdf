@@ -15,7 +15,7 @@ const tabs = {
     klett: {
         name: "Klett",
         component: <Klett />,
-        placeholder: "229a08..."
+        placeholder: "229a08... MTU0OD..."
     },
     cornelsen: {
         name: "Cornelsen",

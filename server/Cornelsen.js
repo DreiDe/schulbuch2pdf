@@ -68,9 +68,10 @@ class Cornelsen extends Downloader {
                     `${tempFolder}${i}.png`,
                     undefined,
                     { 'x-pspdfkit-image-token': pdfCreds.imageToken }
-                ));
+                ))
             }
             const [result] = await Promise.allSettled(promises);
+            console.log(result.status);
             status = result.status;
             counter += 10;
         }

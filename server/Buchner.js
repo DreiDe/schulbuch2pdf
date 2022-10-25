@@ -34,7 +34,7 @@ class Buchner extends Downloader {
         let counter = 1;
 
         while (status === 'fulfilled') {
-            this.status(`Seiten werden eingelesen. Bisher ${counter} Seiten`);
+            this.status(`Seiten werden eingelesen. Bisher ${counter - 1} Seiten`);
             const promises = [];
             for (let i = counter; i < counter + 10; i++) {
                 promises.push(this.downloadImage(`https://www.click-and-study.de/Media/page/${bookId}/${i}`, `${tempFolder}${i}.png`, 2.5));
