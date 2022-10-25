@@ -6,7 +6,7 @@ import Buchner from './Buchner.js';
 import Cornelsen from './Cornelsen.js';
 import Downloader from './Downloader.js';
 
-const PORT = 5000;
+const PORT = 80;
 const TEMP_FOLDER = './tmp';
 const DOWNLOAD_PATH = '/download';
 
@@ -29,6 +29,8 @@ const isDownloadRequestValid = (token, bookId, onMessage) => {
     onMessage("error", "Socket Download Event enthält falsche Parameter.")
     return false;
 }
+
+app.use(express.static("public"));
 
 app.get(`${DOWNLOAD_PATH}/:uuid`, (req, res) => {
     const file = `${TEMP_FOLDER}/${req.params.uuid}/Buch.pdf`;
