@@ -96,7 +96,7 @@ class Downloader {
 
         onMessage('status', `PDF wird abgespeichert...`);
         await new Promise(resolve => {
-            stream.on("finish", function () {
+            writeStream.on("finish", () => {
                 resolve();
             });
         });
