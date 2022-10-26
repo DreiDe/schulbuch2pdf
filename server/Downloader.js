@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
-import PDFDocument from 'pdfkit';
-import fs from 'fs';
+import PDFDocument from 'pdfkit'; // the fastest and most ram efficient node library i could find
+import fs from 'fs'; 
 import axiosThrottle from 'axios-request-throttle';
 import { ImagePool } from '@squoosh/lib';
 import { cpus } from 'os';
@@ -80,7 +80,8 @@ class Downloader {
         var collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
         let pages = (await fs.promises.readdir(folderPath)).sort(collator.compare);
 
-        pdf.pipe(fs.createWriteStream(`${folderPath}/${this.PDF_NAME}`));
+        const writeStream = fs.createWriteStream(`${folderPath}/${this.PDF_NAME}`);
+        pdf.pipe(writeStream);
         for (const file of pages) {
             currentPage++;
             if (currentPage % 5 == 0) {
@@ -91,8 +92,14 @@ class Downloader {
             pdf.addPage({ size: [img.width, img.height] });
             pdf.image(img, 0, 0);
         }
-
         pdf.end();
+
+        onMessage('status', `PDF wird abgespeichert...`);
+        await new Promise(resolve => {
+            stream.on("finish", function () {
+                resolve();
+            });
+        });
     }
 
     static setImmediatePromise() {
