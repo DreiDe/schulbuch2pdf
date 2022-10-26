@@ -9,7 +9,6 @@ import { cpus } from 'os';
 class Downloader {
     static DOWNLOAD_FOLDER = './tmp';
     static PDF_NAME = "Buch.pdf";
-    static imagePool = new ImagePool(cpus().length);
 
     constructor(onMessage, baseUrl, headers) {
         this.error = (message) => onMessage("error", message);
@@ -46,32 +45,25 @@ class Downloader {
 
     static async compressImagesInFolder(folderPath, noCompressionBelowSize) {
         let pages = await fs.promises.readdir(folderPath);
-        const promises = [];
+        const imagePool = new ImagePool(cpus().length);
 
-        for (const file of pages) {
-            promises.push(new Promise(async (resolve, reject) => {
-                const fileStats = await fs.promises.stat(`${folderPath}${file}`);
-                if (fileStats.size < noCompressionBelowSize) {
-                    resolve();
-                    return;
+        const promises = pages.map(async (file) => {
+            const fileStats = await fs.promises.stat(`${folderPath}${file}`);
+            if (fileStats.size < noCompressionBelowSize) return;
+            const image = imagePool.ingestImage(`${folderPath}${file}`);
+
+            await image.encode({
+                mozjpeg: {
+                    quality: 50,
                 }
-                const image = this.imagePool.ingestImage(`${folderPath}${file}`);
-
-                await image.encode({
-                    mozjpeg: {
-                        quality: 50,
-                    }
-                });
-                const { binary } = await image.encodedWith.mozjpeg;
-                await fs.promises.writeFile(`${folderPath}${file}.jpg`, binary);
-                await fs.promises.rm(`${folderPath}${file}`);
-                resolve();
-            }));
-
-        }
+            });
+            const { binary } = await image.encodedWith.mozjpeg;
+            await fs.promises.writeFile(`${folderPath}${file}.jpg`, binary);
+            await fs.promises.rm(`${folderPath}${file}`);
+        });
 
         await Promise.all(promises);
-        await this.imagePool.close();
+        await imagePool.close();
     }
 
     static createTempFolder = async () => {

@@ -37,14 +37,15 @@ class Buchner extends Downloader {
             this.status(`Seiten werden eingelesen. Bisher ${counter - 1} Seiten`);
             const promises = [];
             for (let i = counter; i < counter + 10; i++) {
-                promises.push(this.downloadImage(`https://www.click-and-study.de/Media/page/${bookId}/${i}`, `${tempFolder}${i}.png`, 2.5));
+                promises.push(this.downloadImage(`https://www.click-and-study.de/Media/page/${bookId}/${i}`, `${tempFolder}${i}.jpg`, 5));
             }
             const [result] = await Promise.allSettled(promises);
             status = result.status;
             counter += 10;
         }
         this.status(`Große Seiten werden komprimiert...`);
-        return Downloader.compressImagesInFolder(tempFolder, 1048576).then(() => tempFolder);
+        Downloader.compressImagesInFolder(tempFolder, 1048576);
+        return tempFolder;
     }
 }
 

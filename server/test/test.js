@@ -20,6 +20,8 @@ const jwt = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJsYXllciI6IkAhMzhDNC42NTlGLj
 //console.log(await (new Buchner(onMessage, buchner).downloadAllPages(230)));
 //console.log(await (new Klett(onMessage, klett1, klett2).downloadAllPages("EBK-AQ68Q3BXMT")));
 //await Downloader.pdfFromTempFolder('./tmp/ea7d4be6-8b28-4f7e-be10-e3a6a79ac76a', console.log);
-Downloader.pdfFromTempFolder('./tmp/865302cc-192c-4161-9f65-fbd88662e792/', () => {});
+await Downloader.compressImagesInFolder('./tmp/77a9dfb9-fd6b-4a45-b94c-e0772455cf4a/', 1048576);
+//await Downloader.pdfFromTempFolder('./tmp/744393db-3a4a-41dd-9595-8d87ffb10294/', onMessage);
+//const result = await Downloader.pdfFromTempFolder('./tmp/3c6c3fd4-14c9-4bec-9270-1d883d4f32f3/', onMessage);
 //Downloader.compressImagesInFolder('./tmp/eeb7eaef-6401-4264-b142-9058ed3ff88f/');
 

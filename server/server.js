@@ -40,6 +40,7 @@ app.get(`${DOWNLOAD_PATH}/:uuid`, (req, res) => {
 io.on('connection', socket => {
     const onMessage = (type, message) => socket.emit(type, message);
     const download = async (tempFolder) => {
+        if(!tempFolder) return; // in case some error has occured while doing the request
         await Downloader.pdfFromTempFolder(tempFolder, onMessage);
         socket.emit('download', tempFolder.replace(TEMP_FOLDER, DOWNLOAD_PATH));
     }

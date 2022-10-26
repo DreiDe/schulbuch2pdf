@@ -78,7 +78,8 @@ class Klett extends Downloader {
             counter += 10;
         }
         this.status(`Große Seiten werden komprimiert...`);
-        return Downloader.compressImagesInFolder(tempFolder, 1048576).then(() => tempFolder);
+        await Downloader.compressImagesInFolder(tempFolder, 1048576);
+        return tempFolder;
     }
 };
 

@@ -71,12 +71,12 @@ class Cornelsen extends Downloader {
                 ))
             }
             const [result] = await Promise.allSettled(promises);
-            console.log(result.status);
             status = result.status;
             counter += 10;
         }
         this.status(`Seiten werden komprimiert...`);
-        return await Downloader.compressImagesInFolder(tempFolder, 0).then(() => tempFolder);
+        await Downloader.compressImagesInFolder(tempFolder, 0);
+        return tempFolder;
     }
 }
 
