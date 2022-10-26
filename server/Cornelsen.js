@@ -55,7 +55,7 @@ class Cornelsen extends Downloader {
         if (!pdfCreds) return;
 
         // TODO: make this a reusable function peace
-        const tempFolder = Downloader.createTempFolder();
+        const tempFolder = await Downloader.createTempFolder();
         let status = 'fulfilled';
         let counter = 0;
 
@@ -75,8 +75,8 @@ class Cornelsen extends Downloader {
             status = result.status;
             counter += 10;
         }
-
-        return tempFolder;
+        this.status(`Seiten werden komprimiert...`);
+        return await Downloader.compressImagesInFolder(tempFolder, 0).then(() => tempFolder);
     }
 }
 

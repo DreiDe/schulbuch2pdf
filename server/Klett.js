@@ -63,7 +63,7 @@ class Klett extends Downloader {
 
     async downloadAllPages(bookId) {
         // TODO: make this a reusable function peace
-        const tempFolder = Downloader.createTempFolder();
+        const tempFolder = await Downloader.createTempFolder();
         let status = 'fulfilled';
         let counter = 0;
 
@@ -77,8 +77,8 @@ class Klett extends Downloader {
             status = result.status;
             counter += 10;
         }
-
-        return tempFolder;
+        this.status(`Große Seiten werden komprimiert...`);
+        return Downloader.compressImagesInFolder(tempFolder, 1048576).then(() => tempFolder);
     }
 };
 

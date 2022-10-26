@@ -3,10 +3,13 @@ import { v4 as uuidv4 } from 'uuid';
 import PDFDocument from 'pdfkit';
 import fs from 'fs';
 import axiosThrottle from 'axios-request-throttle';
+import { ImagePool } from '@squoosh/lib';
+import { cpus } from 'os';
 
 class Downloader {
     static DOWNLOAD_FOLDER = './tmp';
     static PDF_NAME = "Buch.pdf";
+    static imagePool = new ImagePool(cpus().length);
 
     constructor(onMessage, baseUrl, headers) {
         this.error = (message) => onMessage("error", message);
@@ -32,8 +35,8 @@ class Downloader {
         if (requestsPerSecond) axiosThrottle.use(axios, { requestsPerSecond });
         const resp = await axios.get(url, { responseType: 'stream', headers: { ...this.api.defaults.headers, ...headers } });
 
-        const writer = fs.createWriteStream(location)
-        resp.data.pipe(writer)
+        const writer = fs.createWriteStream(location);
+        resp.data.pipe(writer);
 
         return new Promise((resolve, reject) => {
             writer.on('finish', resolve)
@@ -41,9 +44,39 @@ class Downloader {
         })
     };
 
-    static createTempFolder = () => {
+    static async compressImagesInFolder(folderPath, noCompressionBelowSize) {
+        let pages = await fs.promises.readdir(folderPath);
+        const promises = [];
+
+        for (const file of pages) {
+            promises.push(new Promise(async (resolve, reject) => {
+                const fileStats = await fs.promises.stat(`${folderPath}${file}`);
+                if (fileStats.size < noCompressionBelowSize) {
+                    resolve();
+                    return;
+                }
+                const image = this.imagePool.ingestImage(`${folderPath}${file}`);
+
+                await image.encode({
+                    mozjpeg: {
+                        quality: 50,
+                    }
+                });
+                const { binary } = await image.encodedWith.mozjpeg;
+                await fs.promises.writeFile(`${folderPath}${file}.jpg`, binary);
+                await fs.promises.rm(`${folderPath}${file}`);
+                resolve();
+            }));
+
+        }
+
+        await Promise.all(promises);
+        await this.imagePool.close();
+    }
+
+    static createTempFolder = async () => {
         const folderPath = `${this.DOWNLOAD_FOLDER}/${uuidv4()}/`;
-        fs.mkdirSync(folderPath);
+        await fs.promises.mkdir(folderPath);
         return folderPath;
     }
 
@@ -53,7 +86,7 @@ class Downloader {
         });
         let currentPage = 0;
         var collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
-        let pages = fs.readdirSync(folderPath).sort(collator.compare);
+        let pages = (await fs.promises.readdir(folderPath)).sort(collator.compare);
 
         pdf.pipe(fs.createWriteStream(`${folderPath}/${this.PDF_NAME}`));
         for (const file of pages) {
@@ -76,8 +109,8 @@ class Downloader {
         });
     }
 
-    static deleteTempFolder = (name) => {
-        fs.rm(name, { recursive: true });
+    static deleteTempFolder = async (name) => {
+        await fs.promises.rm(name, { recursive: true });
         return true;
     }
 

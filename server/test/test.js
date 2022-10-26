@@ -1,8 +1,8 @@
-import Westermann from './Westermann.js';
-import Cornelsen from './Cornelsen.js';
-import Buchner from './Buchner.js';
-import Klett from './Klett.js';
-import Downloader from './Downloader.js';
+import Westermann from '../Westermann.js';
+import Cornelsen from '../Cornelsen.js';
+import Buchner from '../Buchner.js';
+import Klett from '../Klett.js';
+import Downloader from '../Downloader.js';
 
 const onMessage = (type, message) => {
     console.log(message);
@@ -20,5 +20,6 @@ const jwt = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJsYXllciI6IkAhMzhDNC42NTlGLj
 //console.log(await (new Buchner(onMessage, buchner).downloadAllPages(230)));
 //console.log(await (new Klett(onMessage, klett1, klett2).downloadAllPages("EBK-AQ68Q3BXMT")));
 //await Downloader.pdfFromTempFolder('./tmp/ea7d4be6-8b28-4f7e-be10-e3a6a79ac76a', console.log);
-Downloader.pdfFromTempFolder('./tmp/ff878c96-2d91-41b6-8767-21ddc4f1d330/', () => {});
+Downloader.pdfFromTempFolder('./tmp/865302cc-192c-4161-9f65-fbd88662e792/', () => {});
+//Downloader.compressImagesInFolder('./tmp/eeb7eaef-6401-4264-b142-9058ed3ff88f/');
 

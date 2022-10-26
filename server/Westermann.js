@@ -47,12 +47,14 @@ class Westermann extends Downloader {
         const urls = await this.#getPageUrls(bookId);
         if (!urls) return;
 
-        const tempFolder = Downloader.createTempFolder();
+        const tempFolder = await Downloader.createTempFolder();
         const promises = [];
         for (let i = 0; i < urls.length; i++) {
             promises.push(this.downloadImage(urls[i], `${tempFolder}${i}.png`));
         }
-        return Promise.all(promises).then(() => tempFolder);
+        await Promise.all(promises);
+        this.status(`Große Seiten werden komprimiert...`);
+        return Downloader.compressImagesInFolder(tempFolder, 1048576).then(() => tempFolder);
     }
 }
 
